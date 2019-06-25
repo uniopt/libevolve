@@ -65,7 +65,7 @@ class EvoParam(InputParam):
         self._value_range = value_range
         self.seed = seed
         self.rs = random.Random()
-        self.rs.seed(seed)
+        #self.rs.seed(seed)
 
     def get_rand_value(self):
         """ Get random parameter value
@@ -76,6 +76,7 @@ class EvoParam(InputParam):
             random value from the parameter's range possible values
         """
         self._val = self.rs.choice(self._value_range)
+
         return self._val
 
     def get_value_range(self):
@@ -132,8 +133,8 @@ class EvoIntParam(EvoParam):
         """
         self._min_val = min_val
         self._max_val = max_val
-        val_range = list(range(min_val, max_val+1))
-        super().__init__(name=name, value_range=val_range, seed=seed)
+        self._value_range =list(range(min_val, max_val+1))
+        super().__init__(name=name, value_range=self._value_range, seed=seed)
         self.type = int
 
     def set_max_value(self, max_value):
@@ -236,5 +237,6 @@ class EvoCategoricalParam(EvoParam):
         categories : list
             the list of possible values for the parameter
         """
+        self.categories = categories
         super().__init__(name=name, value_range=categories, seed=seed)
         self.type = None
