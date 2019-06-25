@@ -2,7 +2,7 @@ import random
 
 from ._base import GeneticAlgorithm
 from deap import base, algorithms, creator, tools
-from libevolve.libevolve.common._base import EvoCategoricalParam,EvoIntParam,EvoFlagParam, EvoFloatParam
+from libevolve.libevolve.common import *
 
 class SGA(GeneticAlgorithm):
 
