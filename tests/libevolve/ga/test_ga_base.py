@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+from libevolve.common import *
 from libevolve.ga import GeneticAlgorithm
 
 
@@ -21,5 +22,13 @@ def test_ga_evolve_exceptions():
     """
 
     """
+    a = EvoIntParam(name="a", min_val=0, max_val=10)
+    b = EvoFloatParam(name="b", min_val=10, max_val=20, step=0.5)
 
+    def objective_fn(a, b):
+        return 0.1 * (a-b),
 
+    ga = GeneticAlgorithm()
+    best_score, best_params, history = ga.evolve(parameters=[a, b],
+                                                 fitness_function=objective_fn,
+                                                 objective_weights=[-1, 1])

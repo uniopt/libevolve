@@ -1,3 +1,3 @@
-# Libevolve [![build](https://travis-ci.com/uniopt/libevolve.svg?branch=master)](https://travis-ci.com/uniopt/libevolve) [![Requirements Status](https://requires.io/github/uniopt/libevolve/requirements.svg?branch=master)](https://requires.io/github/uniopt/libevolve/requirements/?branch=master)
+# Libevolve [![build](https://travis-ci.com/uniopt/libevolve.svg?branch=develop)](https://travis-ci.com/uniopt/libevolve) [![Requirements Status](https://requires.io/github/uniopt/libevolve/requirements.svg?branch=master)](https://requires.io/github/uniopt/libevolve/requirements/?branch=develop) [![coverage badge](https://codecov.io/gh/uniopt/libevolve/branch/develop/graph/badge.svg)](https://codecov.io/gh/uniopt/libevolve/branch/develop)
 
 A python library for evolutionary algorithms
