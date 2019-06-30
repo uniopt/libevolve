@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import abstractmethod
-from random import Random
+from random import *
 from .util import GeneticHistory, normalise
 from ..common import *
 
@@ -41,7 +41,7 @@ class GeneticAlgorithm:
 
         Examples
         ----------
-        >>> from libevolve.ga import GeneticAlgorithm
+        >>> from libevolve.libevolve.ga import GeneticAlgorithm
         >>> ga = GeneticAlgorithm(population_size=10, nb_generations=15, mutation_size=1, mutation_probability=0.9)
         """
 
@@ -58,7 +58,19 @@ class GeneticAlgorithm:
         self.fitness_function = None
         self.objective_weights = None
         self.history = GeneticHistory()
+    @abstractmethod
+    def _mutate(self,population,size):
+        """
+        :param population:
+        :returns: A list of varied individuals that have had changes in there genes .
+        """
+        offsprings = [Random.choice(population) for i in range(size)]
+        for ind in offsprings:
+            for i in range(1,len(ind)):
+                if random.random()<self.mutation_probability:
+                    ind[i]._val = ind[i].get_rand_value()
 
+        return offsprings
     @abstractmethod
     def _crossover(self, parent1, parent2):
         """ Crossover between two parents individuals
@@ -77,10 +89,15 @@ class GeneticAlgorithm:
         Individual
             second child individual
         """
-        pass
+        size = len(parent1)
+        for i in range(size):
+            if random.random()<self.crossover_probability:
+                parent1[i],parent2[i]=parent2[i],parent1[i]
+
+        return [parent1,parent2]
 
     @abstractmethod
-    def natural_selection(self, population, fitness_scores, *args, **kwargs):
+    def natural_selection(self, population,*args, **kwargs):
         """ Perform genetic natural selection
 
         population : list
@@ -97,7 +114,9 @@ class GeneticAlgorithm:
         list
             list of chosen individuals
         """
-        pass
+        k = args
+        population.sort(reverse=True)
+        return population[:k]
 
     def evolve(self, parameters, fitness_function, objective_weights, *args, **kwargs):
         """ Perform evolution on the specified parameters and objective function
@@ -126,7 +145,7 @@ class GeneticAlgorithm:
 
         Examples
         ----------
-        >>> from libevolve.ga import GeneticAlgorithm
+        >>> from libevolve.libevolve.ga import GeneticAlgorithm
         >>> from libevolve.common import *
         >>> ga = GeneticAlgorithm(population_size=10, nb_generations=15, mutation_size=1, mutation_probability=0.9)
         >>> best_solution, best_score, history = ga.evolve()
@@ -144,18 +163,40 @@ class GeneticAlgorithm:
             population.append(ind)
 
         current_generation = population
+
         current_generation_fitness = [[] for _ in range(nb_objectives)]
 
         for generation_idx in range(self.nb_generations):
+            """
+            select
+            
+            """
+            parents =self.natural_selection(population)
+            """
+            cross over
+            """
+            parent1_indx = Random.randint(0,len(parents))
+
+            parent2_indx = Random.randint(0,len(parents))
+
+            offsprings = []
+
+            offsprings+=self._crossover(parent1_indx,parent2_indx)
+            """
+            mutate
+            """
+            size = Random.randint(1,len(offsprings))
+
+            offsprings = self._mutate(population,size)
+
+            population = offsprings
+
+            current_generation = population
             for ind in current_generation:
                 ind_fitness = fitness_function(**ind.key_params)
                 for idx, fitness_value in enumerate(ind_fitness):
                     current_generation_fitness[idx].append(fitness_value)
 
-                # selection
 
-                # crossover
-
-                # mutations
 
         return best_solution, best_score, self.history
