@@ -7,6 +7,9 @@ def objective_fn(a, b, c):
     c = ord(c)
     return -(a+b-c)**2 + a + b, -(a-c)**2
 
+def eval_fun(indiviual):
+    return objective_fn(indiviual[0],indiviual[1], indiviual[2])
+
 
 def main():
 
@@ -16,8 +19,8 @@ def main():
 
     ga = GeneticAlgorithm()
     best_score, best_params, history = ga.evolve(parameters=[a, b, c],
-                                                 fitness_function=objective_fn,
-                                                 objective_weights=[-1, 1])
+                                                 fitness_function=eval_fun,
+                                                 objective_weights=(1,-1))
 
 
 if __name__ == '__main__':
