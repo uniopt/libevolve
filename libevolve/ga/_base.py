@@ -114,7 +114,7 @@ class GeneticAlgorithm:
         list
             list of chosen individuals
         """
-        k = args
+        k = self.selection_size
         population.sort(reverse=True)
         return population[:k]
 

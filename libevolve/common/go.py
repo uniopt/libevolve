@@ -18,8 +18,8 @@ def validate_input_param(obj):
 
     Examples
     ----------
-    >>> from libevolve.libevolve.common import *
-    >>> from libevolve.libevolve.common.go import validate_input_param
+    >>> from libevolve.common import *
+    >>> from libevolve.common.go import validate_input_param
     >>> a = EvoIntParam(name="a")
     >>> validate_input_param(a)
     True
@@ -42,7 +42,7 @@ def check_list_has_duplicates(list_obj):
 
     Examples
     ----------
-    >>> from libevolve.libevolve.common.go import check_list_has_duplicates
+    >>> from libevolve.common.go import check_list_has_duplicates
     >>> check_list_has_duplicates([1,2,3,4,2])
     True
     """
@@ -65,7 +65,7 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         """
         super().__init__()
@@ -84,8 +84,8 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import *
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import *
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         >>> ind.key_params
         {'a': 12, 'b': -10}
@@ -103,8 +103,8 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import *
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import *
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         >>> ind.param_names
         ['a', 'b']
@@ -122,8 +122,8 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import *
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import *
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         >>> ind.nb_params
         2
@@ -135,8 +135,8 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import *
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import *
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         >>> ind.randomise()
 
@@ -164,8 +164,8 @@ class Individual(list):
 
         Examples
         ----------
-        >>> from libevolve.libevolve.common import *
-        >>> from libevolve.libevolve.common import Individual
+        >>> from libevolve.common import *
+        >>> from libevolve.common import Individual
         >>> ind = Individual([EvoIntParam(name="a"), EvoFloatParam(name="b")])
         >>> ind.mutate()
         [-71, -10]
