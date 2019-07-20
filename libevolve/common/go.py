@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from random import Random
-from libevolve.libevolve.common import *
+from libevolve.common import *
 
 
 def validate_input_param(obj):
