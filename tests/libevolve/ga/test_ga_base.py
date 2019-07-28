@@ -26,8 +26,8 @@ def test_ga_evolve_exceptions():
     b = EvoFloatParam(name="b", min_val=10, max_val=20, step=0.5)
     c = EvoIntParam(name="c")
     def objective_fn(a, b, c):
-        return 0.1 * (a-b),
-
+        res = (b-c)
+        return res
     ga = GeneticAlgorithm()
     best_score, best_params, history = ga.evolve(parameters=[c,a, b],
                                                  fitness_function=objective_fn,
