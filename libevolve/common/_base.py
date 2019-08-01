@@ -187,7 +187,13 @@ class EvoFloatParam(EvoIntParam):
         self._min_val = min_val
         self._max_val = max_val
         self._step = step
-        val_range = [v for v in range(int(min_val*step), int((max_val+step)*step))]
+        m = float(min_val)
+        val_range = [m]
+        while m <= max_val:
+            m = m + step
+            val_range.append(m)
+
+        # val_range = [v for v in range(int(min_val*step), int((max_val+step)*step))]
         self._value_range = val_range
         self.type = float
         self._val = self.get_rand_value()
