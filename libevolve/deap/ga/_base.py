@@ -18,17 +18,8 @@ from collections.abc import Iterable
 from random import Random
 import random
 import numpy as np
-from .util import GeneticHistory, normalise
+from .util import GeneticHistory
 from deap import base, algorithms, creator, tools
-
-
-
-# def mutate(individual, indpb, myself):
-#     for i in range(len(individual)):
-#         if random.random() < indpb:
-#             individual[i] = myself.parameters[i].get_rand_value()
-#     return individual,
-
 
 
 class GeneticAlgorithm:
@@ -41,7 +32,7 @@ class GeneticAlgorithm:
                  mutation_probability=0.3,
                  crossover_probability=0.5,
                  seed=1234,
-                 verbose=0):
+                 verbose=True):
         """ Initialise a new instance of the `GeneticAlgorithm` class
 
         Parameters
@@ -65,7 +56,7 @@ class GeneticAlgorithm:
 
         Examples
         ----------
-        >>> from libevolve.ga import GeneticAlgorithm
+        >>> from libevolve.deap.ga import GeneticAlgorithm
         >>> ga = GeneticAlgorithm(population_size=10, nb_generations=15, mutation_probability=0.9)
         """
 
@@ -75,19 +66,15 @@ class GeneticAlgorithm:
         self.crossover_probability = crossover_probability
         self.crossover_func = tools.cxOnePoint
         self.selection_func = tools.selTournament
-        self.sel_attr_dict={'tournsize': 3}
-
+        self.sel_attr_dict = {'tournsize': 3}
+        self.hof = None
         self.verbose = verbose
         self.seed = seed
         self.rs = Random(seed)
         self.parameters = None
         self.fitness_function = None
         self.objective_weights = None
-        self.history = None
-
-
-
-
+        self.history = []
 
     def __mutate(self, individual, indpb):
         """ General Mutation for any Type of gene
@@ -98,7 +85,7 @@ class GeneticAlgorithm:
             an individual in the population
 
         indpb : float between 0 and 1
-            probabilty of mutation
+            probability of mutation
 
         Returns
         -------
@@ -106,14 +93,11 @@ class GeneticAlgorithm:
             The mutant Individual (Chromosome)
 
         """
-
         for i in range(len(individual)):
             if random.random() < indpb:
                 individual[i] = self.parameters[i].get_rand_value()
 
         return individual,
-
-
 
     def __intialize_toolbox(self):
         """ Initialize The Toolbox for the GA
@@ -124,21 +108,19 @@ class GeneticAlgorithm:
             for testing
 
         """
-
         creator.create("FitnessMax", base.Fitness, weights=self.objective_weights)
         creator.create("Individual", list, fitness=creator.FitnessMax)
         toolbox = base.Toolbox()
 
-        #Register Parameters to the GA
+        # Register Parameters to the GA
         for x in self.parameters:
-            toolbox.register(x.name,x.get_rand_value)
+            toolbox.register(x.name, x.get_rand_value)
 
-        toolbox.register("individual", tools.initCycle, creator.Individual
-                         ,[toolbox.__getattribute__(x.name) for x in self.parameters],n=1)
+        toolbox.register("individual", tools.initCycle, creator.Individual,
+                         [toolbox.__getattribute__(x.name) for x in self.parameters], n=1)
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("evaluate", self.fitness_function)
-
 
         # Register the Cross-Over Function
         toolbox.register("mate", self.crossover_func)
@@ -149,14 +131,10 @@ class GeneticAlgorithm:
         # Register the Selection Function
         toolbox.register("select", self.selection_func, **self.sel_attr_dict)
 
-        #Initiatize the History
-        self.history = tools.History()
-        toolbox.decorate("mate", self.history.decorator)
-        toolbox.decorate("mutate", self.history.decorator)
+        # toolbox.decorate("mutate", self.history.decorator)
 
-        self.toolbox=toolbox
+        self.toolbox = toolbox
         return toolbox
-
 
     def __intialize_stats(self):
         """
@@ -166,33 +144,120 @@ class GeneticAlgorithm:
         ----------
             stats
         """
-
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", np.mean)
         stats.register("max", np.max)
 
-        self.stats=stats
+        self.stats = stats
         return stats
-
 
     def __gen_population(self):
         """
         initialize Population
         """
 
-        self.population = self.toolbox.population(n=self.nb_generations)
-
+        self.population = self.toolbox.population(n=self.population_size)
+        print(type(self.population[0]))
+        for x in self.population:
+            self.history.append(list(x))
 
     def __intialize(self):
-
         """ Initialize toolbox , stats and population for the GA
 
         """
-
         self.__intialize_toolbox()
+        self.hof = tools.HallOfFame(maxsize=1)
         self.__intialize_stats()
         self.__gen_population()
 
+    def gen_algorithm(self, population, toolbox, cxpb, ngen, mutpb, stats=None, halloffame=None, verbose=True):
+        """ Perform genetic algorithm
+
+        population : list
+            a list of of deap.creator.Individual
+        ngen : int
+            number of generations
+        toolbox : deap.toolbox
+            the toolbox must be initialized before calling the function
+        cxpb : float
+            probability of crossover
+        mutpb : float
+            probability of mutation
+
+        stats : deap.tools.Statistics
+            A Statistics object that is updated inplace
+        halloffame : deap.tools.HallOfFame
+            A HallOfFame object that will contain the best individuals
+        verbose : boolean
+            A HallOfFame object that will contain the best individuals
+
+
+        Returns
+        -------
+        list
+            set of best parameter values
+        list
+            set of fitness function scores for the best parameters
+        GeneticHistory
+            history of the genetic evolution
+        """
+        logbook = tools.Logbook()
+        logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        if halloffame is not None:
+            halloffame.update(population)
+
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=0, nevals=len(invalid_ind), **record)
+        if verbose:
+            print(logbook.stream)
+
+        # Begin the generational process
+        for gen in range(1, ngen + 1):
+
+            offspring = toolbox.select(population, len(population))
+            offspring = list(map(toolbox.clone, offspring))
+
+            for child1, child2 in zip(offspring[::2], offspring[1::2]):
+                if random.random() < cxpb:
+
+                    toolbox.mate(child1, child2)
+
+                    del child1.fitness.values
+                    del child2.fitness.values
+
+            for mutant in offspring:
+                if random.random() < mutpb:
+                    toolbox.mutate(mutant)
+                del mutant.fitness.values
+
+            # Evaluate the individuals with an invalid fitness
+            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+            for ind, fit in zip(invalid_ind, fitnesses):
+                ind.fitness.values = fit
+
+            # Update the hall of fame with the generated individuals
+            if halloffame is not None:
+                halloffame.update(offspring)
+
+            # Select the next generation population
+            population[:] = offspring
+            for x in offspring:
+                self.history.append(list(x))
+
+            # Update the statistics with the new population
+            record = stats.compile(population) if stats is not None else {}
+            logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+            if verbose:
+                print(logbook.stream)
+
+        return population, logbook
 
     def evolve(self, parameters, fitness_function, objective_weights, *args, **kwargs):
         """ Perform evolution on the specified parameters and objective function
@@ -225,13 +290,14 @@ class GeneticAlgorithm:
         self.objective_weights = objective_weights
 
         self.__intialize()
-        population, log = algorithms.eaSimple(self.population, self.toolbox,
+        population, log = self.gen_algorithm(self.population, self.toolbox,
                                               cxpb=self.crossover_probability,
                                               stats=self.stats, mutpb=self.mutation_probability,
-                                              ngen=self.nb_generations)
-        best_ind = tools.selBest(population, 1)[0]
-        best_value=best_ind.fitness.values
-
+                                              ngen=self.nb_generations, halloffame=self.hof, verbose=self.verbose)
+        # best_ind = tools.selBest(population, 1)[0]
+        # best_value = best_ind.fitness.values
+        best_ind = self.hof[0]
+        best_value = self.fitness_function(best_ind)
         return best_value, best_ind, self.history
 
 
@@ -243,7 +309,7 @@ class Classic_GA(GeneticAlgorithm):
                  mutation_probability=0.3,
                  crossover_probability=0.5,
                  seed=1234,
-                 verbose=0):
+                 verbose=True):
 
         super().__init__(population_size,
                          nb_generations,
@@ -253,17 +319,14 @@ class Classic_GA(GeneticAlgorithm):
                          verbose)
 
 
-
-
 class Tour_cxTwo_GA(GeneticAlgorithm):
-
     def __init__(self,
                  population_size=20,
                  nb_generations=20,
                  mutation_probability=0.3,
                  crossover_probability=0.5,
                  seed=1234,
-                 verbose=0):
+                 verbose=True):
 
         super().__init__(population_size,
                          nb_generations,
@@ -273,7 +336,6 @@ class Tour_cxTwo_GA(GeneticAlgorithm):
                          verbose)
 
         # when you want to make new type of genetic algorithm, you just make changes here
-        self.crossover_func=tools.cxTwoPoint
+        self.crossover_func = tools.cxTwoPoint
         self.selection_func = tools.selTournament
         self.sel_attr_dict = {'tournsize': 3}
-

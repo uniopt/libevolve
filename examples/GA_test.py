@@ -25,19 +25,13 @@ def fitness_func(v1, v2, v3):
     v3 = ord(v3)
     return -(v1 + v2 - v3) ** 2 + v1_rnd + v2_rnd
 
-def eval_func(individual):
-    return fitness_func(individual[0],individual[1],individual[2]),
-
-
 
 def eval2(part):
-    x = part[0]
-    y = part[1]
-    return x+y,
+    return sum(part),
 
 
-v1 = EvoFloatParam("x1",min_val=-3,max_val=35)
-v2 = EvoFloatParam("x2",min_val=-1,max_val=35)
+v1 = EvoFloatParam("x1", min_val=-3, max_val=35)
+v2 = EvoFloatParam("x2", min_val=-1, max_val=35)
 
 
 # v3_range = [c for c in string.ascii_lowercase]
@@ -45,11 +39,13 @@ v2 = EvoFloatParam("x2",min_val=-1,max_val=35)
 # v2 = EvoIntParam("v2",min_val=0,max_val=100)
 # v3 = EvoParam("v3",v3_range)
 
-params = [v1,v2]
+params = [v1, v2]
 
-c_GA = GeneticAlgorithm(population_size=20,nb_generations=10)
+c_GA = GeneticAlgorithm(population_size=5, nb_generations=10,verbose=True)
 value, ind, hist = c_GA.evolve(parameters=params, fitness_function=eval2, objective_weights=(1.0,))
-print(ind , value)
+print(ind, value)
+
+print(len(hist))
 
 
 

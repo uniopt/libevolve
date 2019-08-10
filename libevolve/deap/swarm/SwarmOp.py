@@ -1,12 +1,7 @@
 import operator
 import random
-
-import numpy as np
 import numpy
-import math
-
 from deap import base
-from deap import benchmarks
 from deap import creator
 from deap import tools
 from libevolve.common._base import *
@@ -14,7 +9,8 @@ from random import Random
 
 
 class SwarmOptimization:
-
+    """ A class for a Swarm Optimization Algorithm
+    """
     def __init__(self,
                  population_size=20,
                  nb_generations=25,
@@ -37,18 +33,25 @@ class SwarmOptimization:
         self.seed = seed
         self.rs = Random(seed)
 
-
-
-
     def __generate_particel(self):
+        """
+        Private method to generate new particle in the start of optimization to generate first population
+        """
 
         p = [x.get_rand_value() for x in self.parameters]
+        self.history.append(p)
         part = creator.Particle(p)
         part.speed = [random.uniform(Min, Max) for Min, Max in self.speed_ranges]
         part.speedranges = self.speed_ranges
         return part
 
-    def __update_particle(self,part,best):
+    def __update_particle(self, part, best):
+        """
+        Update the particle for the next generation
+
+        :param part: list: of params(part) which is wanted to be updated
+        :param best: list: best particle
+        """
         u1 = [random.uniform(0, self.phi1) for _ in range(len(part))]
         u2 = [random.uniform(0, self.phi2) for _ in range(len(part))]
         v_u1 = map(operator.mul, u1, map(operator.sub, part.best, part))
@@ -64,8 +67,12 @@ class SwarmOptimization:
             elif p < self.parameters[i].get_min_value():
                 part[i] = self.parameters[i].get_min_value()
 
+        self.history.append(list(part))
 
     def __intialize_toolbox(self):
+        """
+        Toolbox Initialization
+        """
         creator.create("FitnessMax", base.Fitness, weights=self.objective_weights)
         creator.create("Particle", list, fitness=creator.FitnessMax, speed=list,
                        speedranges=list, best=None)
@@ -77,7 +84,6 @@ class SwarmOptimization:
         toolbox.register("evaluate", self.fitness_function)
 
         self.toolbox = toolbox
-
 
     def __intialize_stats(self):
         """
@@ -95,7 +101,6 @@ class SwarmOptimization:
         logbook.header = ["gen", "evals"] + stats.fields
         self.logbook = logbook
 
-
     def __generate_population(self):
         """
             initialize Population
@@ -111,10 +116,11 @@ class SwarmOptimization:
         self.__intialize_stats()
         self.__generate_population()
 
-
-    def __PSO_algorithm(self):
-        self.best =None
-        # self.history.append(pop)
+    def __pso_algorithm(self):
+        """
+        Particle Swarm optimization
+        """
+        self.best = None
         for g in range(self.nb_generations):
             for part in self.population:
                 part.fitness.values = self.toolbox.evaluate(part)
@@ -127,15 +133,13 @@ class SwarmOptimization:
             for part in self.population:
                 self.toolbox.update(part, self.best)
 
-
             # Gather all the fitnesses in one list and print the stats
             self.logbook.record(gen=g, evals=len(self.population), **self.stats.compile(self.population))
             print(self.logbook.stream)
 
-        return self.population, self.logbook, self.best
+        return self.best, self.fitness_function(self.best), self.history
 
-
-    def evolve(self, parameters,speedranges, fitness_function, objective_weights, *args, **kwargs):
+    def evolve(self, parameters, speedranges, fitness_function, objective_weights, *args, **kwargs):
         """ Perform evolution on the specified parameters and objective function
 
         parameters : list
@@ -167,9 +171,6 @@ class SwarmOptimization:
         self.objective_weights = objective_weights
 
         self.__intialize()
-        population, log,best = self.__PSO_algorithm()
+        self.__pso_algorithm()
 
-
-        return population, log, best
-
-
+        return self.fitness_function(self.best)[0], self.best, self.history
