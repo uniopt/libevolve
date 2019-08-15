@@ -34,6 +34,8 @@ def test_ga_evolve_exceptions():
     ga = GeneticAlgorithm()
     best_score, best_params, history = ga.evolve(parameters=[c,a, b],
                                                  fitness_function=objective_fn, objective_weights=[-1, 1])
+    best_params = best_score[1,:]
+    best_score = best_score[0]
 
     def objective_fn_1(d,e):
         res = d + e
@@ -41,4 +43,3 @@ def test_ga_evolve_exceptions():
 
     nsga = NSGA_II()
     best_solution, best_score, history =nsga.evolve(parameters=[d,c,e,a,b],fitness_function=[objective_fn_1],objective_weights=[1,1,1,1,1])
-    print(best_solution)

@@ -95,8 +95,8 @@ class GeneticAlgorithm:
         for i in range(1,size,2):
             if random.random()<self.crossover_probability:
                 index_1 = random.randint(0,len(ind)-1)
-                index_2 = random.randint(0,len(ind)-1)
-                population[i-1][index_1],population[i][index_2]=population[i][index_2],population[i-1][index_1]
+                population[i - 1][index_1:], population[i][index_1:] = population[i][index_1:], population[i - 1][
+                                                                                                index_1:]
 
 
 
@@ -282,7 +282,7 @@ class NSGA_II(GeneticAlgorithm):
         ----------
         >>> from libevolve.ga import GeneticAlgorithm
         >>> from libevolve.common import *
-        >>> ga = GeneticAlgorithm(population_size=10, nb_generations=15, mutation_size=1, mutation_probability=0.9)
+        >>> ga = NSGA_II(population_size=10, nb_generations=15, mutation_size=1, mutation_probability=0.9)
         >>> best_solution, best_score, history = ga.evolve()
         """
         best_solution, best_score = None, 0.0
@@ -307,6 +307,13 @@ class NSGA_II(GeneticAlgorithm):
 
         for generation_idx in range(self.nb_generations):
             """
+                Select Parents by Rank and Distance and Sort by rank and Distance 
+                functions discriminate members of the population 
+                first by rank (order of dominated precedence of the front to which the solution belongs) 
+                and then distance within the front 
+            """
+
+            """
             select
             """
             parents = self.natural_selection(current_generation,tournament_size,k)
@@ -324,7 +331,6 @@ class NSGA_II(GeneticAlgorithm):
                 parents = parents + self._mutate(population,size)
 
             current_generation = current_generation + parents
-
             """
             Fast Non Dominated Sort
             """
@@ -340,14 +346,24 @@ class NSGA_II(GeneticAlgorithm):
 
             current_generation = offsprings[0:self.population_size]
 
-            best_solution = current_generation
+            best_solution = current_generation[0]
 
         return best_solution, best_score, self.history
 
     def _crowding_distance(self,front):
-        distance = [0 for i in range(0, len(front))]
+        """
+        This function calculates the average distance between members of each front on the front itself
+        Parameters
+        ----------
+        :front list of individals with their rank values
 
-        for obj_fun in range(2,len(self.fitness_function)+2):
+        Returns
+        -------
+        all individuals with their crowding distance
+        """
+        distance = [0 for i in range(0, len(front))]
+        size = len(self.fitness_function)+2
+        for obj_fun in range(2,size):
             front = np.array(front)
             front_1 = np.sort(front[:,obj_fun])
             mn_value = front_1[0]
@@ -369,7 +385,18 @@ class NSGA_II(GeneticAlgorithm):
         front = [list(ind) for ind in front]
         return front
 
-    def _dominat(self,ind1,ind2):
+    def _dominant(self,ind1,ind2):
+        """
+        This function determine which individual dominant the other.
+        Parameters
+        ----------
+        ind1
+        ind2
+
+        Returns
+        -------
+        if the first individual dominat the second one or not
+        """
         for obj_score in range(2,2+len(self.fitness_function)):
             if(ind1[obj_score]>=ind2[obj_score]):
                 continue
@@ -377,6 +404,16 @@ class NSGA_II(GeneticAlgorithm):
         return True
 
     def _fast_non_dominated_sort(self, population):
+        """
+        The function orders the population into a hierarchy of non-dominated Pareto fronts.
+        Parameters
+        ----------
+        population
+
+        Returns
+        -------
+
+        """
         population = self.Evaulate(population,self.fitness_function)
         Dominent = {tuple(ind):[] for ind in population}
         front = [[]]
@@ -387,7 +424,7 @@ class NSGA_II(GeneticAlgorithm):
             Dominent[tuple(population[ind_1])] = []
             Dominent_count[tuple(population[ind_1])] = 0
             for ind_2 in range(0, len(population)):
-                if (self._dominat(population[ind_1],population[ind_2])):
+                if (self._dominant(population[ind_1],population[ind_2])):
                     if population[ind_2] not in Dominent[tuple(population[ind_1])]:
                         Dominent[tuple(population[ind_1])].append(population[ind_2])
                 else:
@@ -419,22 +456,39 @@ class NSGA_II(GeneticAlgorithm):
         return population
 
     def Evaulate(self, population,fitness_function):
+        """
+        This function computes the the fitness scores for each individual in the population
+        Parameters
+        ----------
+        population
+        fitness_function
+
+        Returns
+        -------
+
+        """
         for ind in population:
             iter = 2
             for obj_fn in fitness_function:
-                dict_of_params = {chr(ord('a') + i): ind[i]*self.objective_weights[i] for i in range(3, len(ind))}
-                ind[iter]=obj_fn(**dict_of_params)
+                size = 2+len(self.fitness_function)
+                dict_of_params = {chr(ord('a') + i): ind[i] for i in range(size, len(ind))}
+                ind[iter]=obj_fn(**dict_of_params)*self.objective_weights[iter]
                 iter +=1
         return population
     def natural_selection(self,individuals,tournsize,k):
         """Select the best individual among *tournsize* randomly chosen
             individuals, *k* times. The list returned contains
             references to the input *individuals*.
+
             :param individuals: A list of individuals to select from.
+
             :param k: The number of individuals to select.
+
             :param tournsize: The number of individuals participating in each tournament.
+
             :returns: A list of selected individuals.
             This function uses the :func:`~random.choice` function from the python base
+
             :mod:`random` module.
             """
         chosen = []
@@ -474,6 +528,5 @@ class NSGA_II(GeneticAlgorithm):
         for i in range(1, size, 2):
             if random.random() < self.crossover_probability:
                 index_1 = random.randint(3, len(ind)-1)
-                index_2 = random.randint(3, len(ind)-1)
-                population[i - 1][index_1], population[i][index_2] = population[i][index_2], population[i - 1][index_1]
+                population[i - 1][index_1:], population[i][index_1:] = population[i][index_1:], population[i - 1][index_1:]
         return population
