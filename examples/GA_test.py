@@ -2,7 +2,6 @@ from libevolve.common._base import *
 from libevolve.deap.ga._base import *
 
 import numpy as np
-import random,string
 
 
 def fitness_func(v1, v2, v3):
@@ -41,11 +40,12 @@ v2 = EvoFloatParam("x2", min_val=-1, max_val=35)
 
 params = [v1, v2]
 
-c_GA = GeneticAlgorithm(population_size=5, nb_generations=10,verbose=True)
-value, ind, hist = c_GA.evolve(parameters=params, fitness_function=eval2, objective_weights=(1.0,))
-print(ind, value)
+c_GA = GeneticAlgorithm(population_size=5, nb_generations=20, verbose=True)
+value, ind, hist = c_GA.evolve(parameters=params, fitness_function=eval2, objective_weights=(1.0,1.0))
+print("Best Individual", ind)
+print("value:", value)
 
-print(len(hist))
+print("History:", hist)
 
 
 

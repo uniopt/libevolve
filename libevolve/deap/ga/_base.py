@@ -25,7 +25,7 @@ from deap import base, algorithms, creator, tools
 class GeneticAlgorithm:
     """ A class for a generic genetic algorithm
     """
-    # def __init__(self,parameters, fitness_function, objective_weights):
+
     def __init__(self,
                  population_size=20,
                  nb_generations=20,
@@ -290,12 +290,11 @@ class GeneticAlgorithm:
         self.objective_weights = objective_weights
 
         self.__intialize()
-        population, log = self.gen_algorithm(self.population, self.toolbox,
-                                              cxpb=self.crossover_probability,
-                                              stats=self.stats, mutpb=self.mutation_probability,
-                                              ngen=self.nb_generations, halloffame=self.hof, verbose=self.verbose)
-        # best_ind = tools.selBest(population, 1)[0]
-        # best_value = best_ind.fitness.values
+
+        self.gen_algorithm(self.population, self.toolbox, cxpb=self.crossover_probability,
+                           stats=self.stats, mutpb=self.mutation_probability,
+                           ngen=self.nb_generations, halloffame=self.hof, verbose=self.verbose)
+
         best_ind = self.hof[0]
         best_value = self.fitness_function(best_ind)
         return best_value, best_ind, self.history

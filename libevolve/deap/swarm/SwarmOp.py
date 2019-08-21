@@ -173,4 +173,4 @@ class SwarmOptimization:
         self.__intialize()
         self.__pso_algorithm()
 
-        return self.fitness_function(self.best)[0], self.best, self.history
+        return self.fitness_function(self.best), self.best, self.history
