@@ -155,11 +155,12 @@ class GeneticAlgorithm:
         """
         initialize Population
         """
-
+        his = []
         self.population = self.toolbox.population(n=self.population_size)
         print(type(self.population[0]))
         for x in self.population:
-            self.history.append(list(x))
+            his.append(list(x))
+        self.history.append(his)
 
     def __intialize(self):
         """ Initialize toolbox , stats and population for the GA
@@ -248,8 +249,10 @@ class GeneticAlgorithm:
 
             # Select the next generation population
             population[:] = offspring
+            his = []
             for x in offspring:
-                self.history.append(list(x))
+                his.append(list(x))
+            self.history.append(his)
 
             # Update the statistics with the new population
             record = stats.compile(population) if stats is not None else {}

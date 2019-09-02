@@ -47,5 +47,3 @@ print("value:", value)
 
 print("History:", hist)
 
-
-

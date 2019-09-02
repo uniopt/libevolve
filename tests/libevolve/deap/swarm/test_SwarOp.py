@@ -33,3 +33,4 @@ def test_ga_evolve_exceptions():
     best_score, best_params, history = swarm.evolve(parameters=[a, b], speedranges=speedranges,
                                                     fitness_function=objective_fn,
                                                     objective_weights=[-1, 1])
+    assert type(best_score) == tuple
