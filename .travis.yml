@@ -16,6 +16,8 @@ before_install:
   - conda info -a
 
 install:
+  - 'conda create --yes -n libevolve python=$TRAVIS_PYTHON_VERSION'
+  - 'source activate libevolve'
   - 'pip install pytest pytest-cov'
   - 'pip install codecov'
   - 'pip install -r requirements.txt'
